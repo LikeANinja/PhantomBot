@@ -477,11 +477,16 @@ function buildPanel( callbackFunction ) {
 
 var interval = setInterval(function() {
     if ( isConnected && TABS_INITIALIZED ) {
+        /*console.log( doQueryArray )
         var active = $( "#tabs" ).tabs( "option", "active" );
         if ( active == 0 ) {
             performCurrentPanelRefresh();
             clearInterval( interval );
+        }*/
+        for( var i = 0 in doQueryArray ) {
+            doQueryArray[ i ].func();
         }
+        clearInterval( interval );
     }
 }, INITIAL_WAIT_TIME );
 
