@@ -484,3 +484,32 @@ var interval = setInterval(function() {
         }
     }
 }, INITIAL_WAIT_TIME );
+
+function loadCustomModules() {
+    var customModules = [];
+    $.ajax({
+        url : "/panel/custom/",
+        success : function( d ) {
+            customModules = d.split( "\n" ) ;
+        }
+    }).then( function() {
+
+        for( var i = 0 in customModules ) {
+            if ( ! customModules[ i ] ) { continue; }
+
+            $.ajax({
+                url : "/panel/custom/" + customModules[ i ] + "/" + customModules[ i ] + ".js",
+                success : function( d ) {
+                    var script = document.createElement("script");
+                    script.setAttribute("type", "text/javascript");
+                    script.appendChild( document.createTextNode( d) )
+                    document.body.appendChild( script );
+
+
+
+                }
+            })
+        }
+
+    })
+}
