@@ -114,7 +114,11 @@ connection.onmessage = function(e) {
         eIndex = messageKey + '_';
         if ( e.data.indexOf( eIndex ) !== -1 ) {
 
-            onMessageArray[ messageKey ]( e );
+            for( var idx = 0 in onMessageArray[ messageKey ] ) {
+                if ( typeof onMessageArray[ messageKey ][ idx ] == 'function' ) {
+                    onMessageArray[ messageKey ][ idx ]( e );
+                }
+            }
 
         }
 
@@ -374,9 +378,13 @@ function performCurrentPanelRefresh() {
         functionToCall = $( tabs[ active ] ).data('phantombot-tab');
 
     clearTimeout( panelRefreshTimeout )
-    if ( doQueryArray[ functionToCall ] && typeof doQueryArray[ functionToCall ].func == 'function' ) {
+    if ( doQueryArray[ functionToCall ] && typeof doQueryArray[ functionToCall ] == 'object' ) {
         newPanelAlert('Refreshing Data', 'success', 1000);
-        doQueryArray[ functionToCall ].func();
+        for( var idx = 0 in doQueryArray[ functionToCall ] ) {
+            if ( typeof doQueryArray[ functionToCall ][ idx ].func == 'function' ) {
+                doQueryArray[ functionToCall ][ idx ].func();
+            }
+        }
 
         if ( doQueryArray[ functionToCall ].time ) {
             panelRefreshTimeout = setTimeout( performCurrentPanelRefresh, doQueryArray[ functionToCall ].time );
@@ -395,7 +403,11 @@ function addDoQuery( uniqueId, func, time ) {
         time = 0;
     }
 
-    doQueryArray[ uniqueId ] = { func : func, time : time } ;
+    if ( typeof doQueryArray[ uniqueId ] != 'object' ) {
+        doQueryArray[ uniqueId ] = []
+    }
+
+    doQueryArray[ uniqueId ].push( { func : func, time : time } );
 
 }
 
@@ -406,7 +418,12 @@ function addDoQuery( uniqueId, func, time ) {
  */
 function addOnMessage( uniqueID, func ) {
 
-    onMessageArray[ uniqueID.trim('_') ] = func;
+    var uniqueID = uniqueID.trim('_');
+    if ( typeof onMessageArray[ uniqueID ] != 'object' ) {
+        onMessageArray[ uniqueID ] = [];
+    }
+
+    onMessageArray[ uniqueID ].push( func );
 
 }
 
@@ -477,8 +494,13 @@ function buildPanel( callbackFunction ) {
 
 var interval = setInterval(function() {
     if ( isConnected && TABS_INITIALIZED ) {
-        for( var i = 0 in doQueryArray ) {
-            doQueryArray[ i ].func();
+        for( var idx = 0 in doQueryArray ) {
+
+            for( var idx2 = 0 in doQueryArray[ idx ] ) {
+                if ( typeof doQueryArray[ idx ][ idx2 ].func == 'function' ) {
+                    doQueryArray[ idx ][ idx2 ].func();
+                }
+            }
         }
         clearInterval( interval );
     }
