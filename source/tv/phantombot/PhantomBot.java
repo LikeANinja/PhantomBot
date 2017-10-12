@@ -683,6 +683,15 @@ public final class PhantomBot implements Listener {
     }
 
     /*
+     * Tells you if the build is a pre-release.
+     *
+     * @return {boolean}
+     */
+    public Boolean isPrerelease() {
+        return RepoVersion.getPrereleaseBuild();
+    }
+
+    /*
      * Enables or disables the debug mode.
      *
      * @param {boolean} debug
@@ -1129,6 +1138,7 @@ public final class PhantomBot implements Listener {
         Script.global.defineProperty("twitter", TwitterAPI.instance(), 0);
         Script.global.defineProperty("twitchCacheReady", PhantomBot.twitchCacheReady, 0);
         Script.global.defineProperty("isNightly", isNightly(), 0);
+        Script.global.defineProperty("isPrerelease", isPrerelease(), 0);
         Script.global.defineProperty("version", botVersion(), 0);
         Script.global.defineProperty("changed", newSetup, 0);
         Script.global.defineProperty("discordAPI", DiscordAPI.instance(), 0);
@@ -2707,7 +2717,7 @@ public final class PhantomBot implements Listener {
                 Iterator dirIterator = FileUtils.iterateFiles(new File("./dbbackup"), new WildcardFileFilter("phantombot.auto.*"), null);
                 while (dirIterator.hasNext()) {
                     File backupFile = (File) dirIterator.next();
-                    if (FileUtils.isFileOlder(backupFile, System.currentTimeMillis() - (86400000 * backupSQLiteKeepDays))) {
+                    if (FileUtils.isFileOlder(backupFile, (System.currentTimeMillis() / 1000) - (86400 * backupSQLiteKeepDays))) {
                         FileUtils.deleteQuietly(backupFile);
                     }
                 }
