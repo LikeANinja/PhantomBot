@@ -52,7 +52,7 @@
         <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
         <script>
             $( function() {
-                loadCustomModules();
+                //loadCustomModules();
             })
         </script>
 
@@ -139,12 +139,15 @@
         <script type="text/javascript" src="panel/js/discordPanel.js"></script>
         <script type="text/javascript" src="panel/js/ranksPanel.js"></script>
         <script>
+            $( function() {
 
-            buildPanel( function() {
-                $('#tabs').tabs( { activate : performCurrentPanelRefresh } ).addClass('ui-tabs-vertical ui-helper-clearfix').fadeIn(1000);
-                TABS_INITIALIZED = true;
-                $("#panelLoader").fadeOut(1000);
-            })
+                buildPanel( function() {
+                    $('#tabs').tabs( { activate : performCurrentPanelRefresh } ).addClass('ui-tabs-vertical ui-helper-clearfix').fadeIn(1000);
+                    TABS_INITIALIZED = true;
+                    $("#panelLoader").fadeOut(1000);
+                })
+
+            });
 
 
         </script>

@@ -446,7 +446,7 @@ function getActiveTab() {
  * @param {int} position      The position to appear in the tab list
  */
 function addPanelTab( uniqueID, tabText, panelHTMLPath, position ) {
-
+console.log( uniqueID)
     if ( ! position ) {
 
         position = 9999;
@@ -472,23 +472,27 @@ function addPanelTab( uniqueID, tabText, panelHTMLPath, position ) {
  */
 function buildPanel( callbackFunction ) {
 
-    modulePanelArray = modulePanelArray.filter( Boolean ).reverse();
-    var i = 0;
-    for( i; i < modulePanelArray.length; i++ ) {
+    loadCustomModules( function() {
+        console.log( 1 )
+        modulePanelArray = modulePanelArray.filter( Boolean ).reverse();
+        var i = 0;
+        for( i; i < modulePanelArray.length; i++ ) {
 
-        $( '<div>' ).attr( 'role', 'tabpanel' ).addClass( 'tab-pane' ).prop( 'id', modulePanelArray[i].id ).append(
-            $( '<div>' ).prop( 'id', modulePanelArray[i].id + 'Panel' )
-        ).insertAfter( $( '#dashboard' ) );
+            $( '<div>' ).attr( 'role', 'tabpanel' ).addClass( 'tab-pane' ).prop( 'id', modulePanelArray[i].id ).append(
+                $( '<div>' ).prop( 'id', modulePanelArray[i].id + 'Panel' )
+            ).insertAfter( $( '#dashboard' ) );
 
-        $( '<li>' ).data( 'phantombot-tab', modulePanelArray[i].id ).append(
-            $( '<a>' ).attr( 'href', '#' + modulePanelArray[i].id ).text( modulePanelArray[i].tabText )
-        ).insertAfter( $( 'li[data-tab-list]' ) );
+            $( '<li>' ).data( 'phantombot-tab', modulePanelArray[i].id ).append(
+                $( '<a>' ).attr( 'href', '#' + modulePanelArray[i].id ).text( modulePanelArray[i].tabText )
+            ).insertAfter( $( 'li[data-tab-list]' ) );
 
-        $( '#' + modulePanelArray[i].id + 'Panel' ).load( modulePanelArray[i].panelHTMLPath );
+            $( '#' + modulePanelArray[i].id + 'Panel' ).load( modulePanelArray[i].panelHTMLPath );
 
-    }
+        }
+        callbackFunction();
+    })
 
-    callbackFunction();
+
 
 }
 
@@ -506,29 +510,60 @@ var interval = setInterval(function() {
     }
 }, INITIAL_WAIT_TIME );
 
-function loadCustomModules() {
-    var customModules = [];
-    $.ajax({
-        url : "/panel/custom/",
-        success : function( d ) {
-            customModules = d.split( "\n" ) ;
-        }
-    }).then( function() {
+function loadCustomModules( cmd ) {
 
-        for( var i = 0 in customModules ) {
-            if ( ! customModules[ i ] ) { continue; }
+    try {
 
-            $.ajax({
-                url : "/panel/custom/" + customModules[ i ] + "/" + customModules[ i ] + ".js",
-                success : function( d ) {
-                    var script = document.createElement("script");
-                    script.setAttribute("type", "text/javascript");
-                    script.appendChild( document.createTextNode( d) )
-                    document.body.appendChild( script );
+        var customModules = [];
+        $.ajax({
+            url : "/panel/custom/",
+            success : function( d ) {
+                customModules = d.split( "\n" ) ;
 
-                }
+
+
+            },
+            error : function() {
+                console.log ('No Custom folder found');
+                cmd();
+                return;
+                //die quetly
+            }
+        }).then( function() {
+
+            var $allAjax = [];
+
+            for( var i = 0 in customModules ) {
+                if ( ! customModules[ i ] ) { continue; }
+
+                $allAjax.push($.ajax({
+                    url : "/panel/custom/" + customModules[ i ] + "/" + customModules[ i ] + ".js",
+                    success : function( d ) {
+                        var script = document.createElement("script");
+                        script.setAttribute("type", "text/javascript");
+                        script.appendChild( document.createTextNode( d ) )
+                        document.body.appendChild( script );
+                    },
+                    error : function( d ) {
+                        // Die quietly
+                    }
+                }))
+            }
+
+            $.when.apply( $, $allAjax ).done( function() {
+                cmd();
+                return;
             })
-        }
 
-    })
+        })
+
+    } catch( err ) {
+
+        console.log ('Something went wrong');
+        cmd();
+        return;
+
+    }
+
+
 }
