@@ -510,7 +510,7 @@ var interval = setInterval(function() {
     }
 }, INITIAL_WAIT_TIME );
 
-function loadCustomModules( cmd ) {
+function loadCustomModules( callbackFunction ) {
 
     try {
 
@@ -519,14 +519,8 @@ function loadCustomModules( cmd ) {
             url : "/panel/custom/",
             success : function( d ) {
                 customModules = d.split( "\n" ) ;
-
-
-
             },
             error : function() {
-                console.log ('No Custom folder found');
-                cmd();
-                return;
                 //die quetly
             }
         }).then( function() {
@@ -535,6 +529,8 @@ function loadCustomModules( cmd ) {
 
             for( var i = 0 in customModules ) {
                 if ( ! customModules[ i ] ) { continue; }
+                if ( customModules[ i ].indexOf( '.md' ) > -1 ) { continue; }
+                if ( customModules[ i ].indexOf( '.txt' ) > -1 ) { continue; }
 
                 $allAjax.push($.ajax({
                     url : "/panel/custom/" + customModules[ i ] + "/" + customModules[ i ] + ".js",
@@ -546,12 +542,23 @@ function loadCustomModules( cmd ) {
                     },
                     error : function( d ) {
                         // Die quietly
+                    },
+                    complete : function( xhr, data ) {
+                        if ( 'error' == data ) {
+                            var urlParts = this.url.split( '/' );
+                            alert( 'Failed to load ' + urlParts.pop() + "\nThis may cause some custom functionality to stop working.\nIt is recommended that you remove the directory or file " + urlParts.pop() )
+                        }
+
                     }
                 }))
             }
 
             $.when.apply( $, $allAjax ).done( function() {
-                cmd();
+                callbackFunction();
+                return;
+            }).fail( function(e) {
+
+                callbackFunction();
                 return;
             })
 
@@ -560,7 +567,7 @@ function loadCustomModules( cmd ) {
     } catch( err ) {
 
         console.log ('Something went wrong');
-        cmd();
+        callbackFunction();
         return;
 
     }
