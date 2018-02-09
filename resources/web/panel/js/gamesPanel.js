@@ -352,7 +352,7 @@
             setTimeout(function() { sendCommand('reloadadventure') }, TIMEOUT_WAIT_TIME);
             return;
         }
-        
+
         if (setting == 'coolDownAnnounce') {
             $("#adventure" + setting).html("<i style=\"color: var(--main-color)\" class=\"fa fa-spinner fa-spin\" />");
             if (l == 'true') {
@@ -415,28 +415,14 @@
         setTimeout(function() { doQuery(); sendCommand('reloadgamble'); }, TIMEOUT_WAIT_TIME);
     };
 
-    // Import the HTML file for this panel.
-    $("#gamesPanel").load("/panel/games.html");
-
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $("#tabs").tabs("option", "active");
-            if (active == 15) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
-
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $("#tabs").tabs("option", "active");
-        if (active == 15 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Games Data', 'success', 1000);
-            doQuery();
-        }
-    }, 3e4);
+    /**
+     * Add panel, doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addPanelTab('games', 'Games', '/panel/games.html', 750);
+    addDoQuery('games', doQuery, 3e4);
+    addOnMessage('games', onMessage);
 
 
     // Export to HTML

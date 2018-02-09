@@ -240,28 +240,14 @@
         setTimeout(function() { doQuery(); sendCommand('rankreloadtable'); }, TIMEOUT_WAIT_TIME);
     }
 
-    // Import the HTML file for this panel.
-    $("#ranksPanel").load("/panel/ranks.html");
-
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $("#tabs").tabs("option", "active");
-            if (active == 6) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
-
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $("#tabs").tabs("option", "active");
-        if (active == 6 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Ranks Data', 'success', 1000);
-            doQuery();
-        }
-    }, 3e4);
+    /**
+     * Add panel, doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addPanelTab('ranks', 'Ranks', '/panel/ranks.html', 300);
+    addDoQuery('ranks', doQuery, 3e4);
+    addOnMessage('ranks', onMessage);
 
     // Export functions - Needed when calling from HTML.
     $.ranksOnMessage = onMessage;

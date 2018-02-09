@@ -252,7 +252,7 @@
                     if (panelMatch(key, 'subPlan3000')) {
                         $('#subPlan3000Input').val(value);
                     }
-                    
+
                 }
             }
 
@@ -593,28 +593,14 @@
     }
 
 
-    // Import the HTML file for this panel.
-    $('#greetingsPanel').load('/panel/greetings.html');
-
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $("#tabs").tabs("option", "active");
-            if (active == 7) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
-
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $('#tabs').tabs('option', 'active');
-        if (active == 7 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Greeting Data', 'success', 1000);
-            doQuery();
-        }
-    }, 3e4);
+    /**
+     * Add panel, doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addPanelTab('greetings', 'Alerts', '/panel/greetings.html', 350);
+    addDoQuery('greetings', doQuery, 3e4);
+    addOnMessage('greetings', onMessage);
 
     // Export functions - Needed when calling from HTML.
     $.greetingsOnMessage = onMessage;

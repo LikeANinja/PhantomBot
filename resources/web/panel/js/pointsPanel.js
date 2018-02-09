@@ -363,7 +363,7 @@
     function modifyUserPoints(action) {
         var username = $("#adjustUserPointsNameInput").val(),
             points = $("#adjustUserPointsInput").val();
-        
+
         username = username.replace(/\s+/g, '');
 
         if (action == "take") {
@@ -459,28 +459,14 @@
         setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
     }
 
-    // Import the HTML file for this panel.
-    $("#pointsPanel").load("/panel/points.html");
-
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $("#tabs").tabs("option", "active");
-            if (active == 4) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
-
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $("#tabs").tabs("option", "active");
-        if (active == 4 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Points Data', 'success', 1000);
-            doLiteQuery();
-        }
-    }, 3e4);
+    /**
+     * Add panel, doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addPanelTab('points', 'Points', '/panel/points.html', 200);
+    addDoQuery('points', doQuery, 3e4);
+    addOnMessage('points', onMessage);
 
     // Export functions - Needed when calling from HTML.
     $.pointsOnMessage = onMessage;

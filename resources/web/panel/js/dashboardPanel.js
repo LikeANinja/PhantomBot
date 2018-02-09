@@ -665,25 +665,14 @@
     // Import the HTML file for this panel.
     $("#dashboardPanel").load("/panel/dashboard.html");
 
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $("#tabs").tabs("option", "active");
-            if (active == 0) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
+    /**
+     * Add doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addDoQuery('dashboard', doQuery , 3e4);
+    addOnMessage('dashboard', onMessage);
 
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $("#tabs").tabs("option", "active");
-        if (active == 0 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Dashboard Data', 'success', 1000);
-            doQuery();
-        }
-    }, 3e4);
 
     // Export functions - Needed when calling from HTML.
     $.dashboardOnMessage = onMessage;

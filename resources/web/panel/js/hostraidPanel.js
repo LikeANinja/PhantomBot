@@ -297,28 +297,14 @@
         setTimeout(function() { doQuery(); sendCommand('reloadhost'); }, TIMEOUT_WAIT_TIME);
     }
 
-    // Import the HTML file for this panel.
-    $('#hostraidPanel').load('/panel/hostraid.html');
-
-    // Load the DB items for this panel, wait to ensure that we are connected.
-    var interval = setInterval(function() {
-        if (isConnected && TABS_INITIALIZED) {
-            var active = $('#tabs').tabs('option', 'active');
-            if (active == 13) {
-                doQuery();
-                clearInterval(interval);
-            }
-        }
-    }, INITIAL_WAIT_TIME);
-
-    // Query the DB every 30 seconds for updates.
-    setInterval(function() {
-        var active = $('#tabs').tabs('option', 'active');
-        if (active == 13 && isConnected && !isInputFocus()) {
-            newPanelAlert('Refreshing Hosts/Raids Data', 'success', 1000);
-            doQuery();
-        }
-    }, 3e4);
+    /**
+     * Add panel, doQuery and onMessage hooks
+     * Added by LikeANinja
+     * @since  2018-02-08
+     */
+    addPanelTab('hostraid', 'Hosts & Raids', '/panel/hostraid.html', 650);
+    addDoQuery('hostraid', doQuery, 3e4);
+    addOnMessage('hostraid', onMessage);
 
     // Export to HTML
     $.hostraidOnMessage = onMessage;
