@@ -577,5 +577,6 @@ var interval = setInterval(function() {
                 }
             }
         }
+        clearInterval(interval);
     }
 }, INITIAL_WAIT_TIME);
