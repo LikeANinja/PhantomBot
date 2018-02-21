@@ -1589,6 +1589,12 @@ public final class PhantomBot implements Listener {
             return;
         }
 
+        if (message.equalsIgnoreCase("discordreconnect")) {
+        	print("[CONSOLE] Executing discordreconnect");
+        	DiscordAPI.instance().reconnect();
+        	return;
+        }
+
         /* enables debug mode */
         if (message.equalsIgnoreCase("debugon")) {
             print("[CONSOLE] Executing debugon: Enable Debug Mode");
@@ -1886,7 +1892,7 @@ public final class PhantomBot implements Listener {
             command = commandString.substring(0, commandString.indexOf(" "));
             arguments = commandString.substring(commandString.indexOf(" ") + 1);
         }
-        ScriptEventManager.instance().onEvent(new CommandEvent(username, command, arguments));
+        EventBus.instance().postAsync(new CommandEvent(username, command, arguments));
     }
 
     /* Handles dev debug commands. */
@@ -2652,7 +2658,7 @@ public final class PhantomBot implements Listener {
                 Iterator dirIterator = FileUtils.iterateFiles(new File("./dbbackup"), new WildcardFileFilter("phantombot.auto.*"), null);
                 while (dirIterator.hasNext()) {
                     File backupFile = (File) dirIterator.next();
-                    if (FileUtils.isFileOlder(backupFile, (System.currentTimeMillis() / 1000) - (86400 * backupSQLiteKeepDays))) {
+                    if (FileUtils.isFileOlder(backupFile, (System.currentTimeMillis() - (long) (backupSQLiteKeepDays * 864e5)))) {
                         FileUtils.deleteQuietly(backupFile);
                     }
                 }

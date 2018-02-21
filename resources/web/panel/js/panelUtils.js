@@ -102,11 +102,10 @@ connection.onmessage = function(e) {
     }
     debugMsg('connection.onmessage('+ e.data + ')');
 
-    if (messageObject['authresult'] == false) {
-        if (!messageObject['authresult']) {
+    if (messageObject['authresult'] !== undefined) {
+        if (messageObject['authresult'] === 'false') {
             isConnected = false;
             newPanelAlert('Authorization Failed! Check Configuration File', 'danger', 0);
-            return;
         }
         return;
     }

@@ -27,6 +27,8 @@
  * You can also generate modals with jQuery, see util/helpers.js for more information.
  */
 $(function() {
+    var cluster = null;
+
     /*
      * Global function that is called once the socket is connected and that the YouTube iframe is loaded.
      */
@@ -38,14 +40,26 @@ $(function() {
 
     	// Add a listener to load the main playlist.
         player.addListener('playlist', (e) => {
-            let table = $('#playlist-table-content'),
+            let table = [],
                 playlist = e.playlist;
-
-            // Remove the current data from the table.
-            table.find('tr:gt(0)').remove();
 
             // Set the playlist name.
             $('#playlist-name').html('(' + e.playlistname + ')');
+
+            // Table header.
+            table.push(($('<tr>').append($('<th/>', {
+                'style': 'width: 5%;',
+                'html': '#'
+            })).append($('<th/>', {
+                'style': 'width: 70%;',
+                'html': 'Song'
+            })).append($('<th/>', {
+                'style': 'width: 15%;',
+                'html': 'Duration'
+            })).append($('<th/>', {
+                'style': 'width: 10%;',
+                'html': 'Actions'
+            }))).html());
 
             for (let i = 0; i < playlist.length; i++) {
                 let row = $('<tr/>');
@@ -75,35 +89,57 @@ $(function() {
                 		'data-toggle': 'tooltip',
                 		'title': 'Play song',
                 		'data-song': playlist[i].song,
+                        'data-song-play': 'on',
                 		'html': $('<i/>', {
                 			'class': 'fas fa-play'
-                		}),
-                		'click': (e) => {
-                			// Update the song.
-                			player.updateSong($(e.currentTarget).data('song'));
-                			// Hide the tooltip.
-                			$(e.currentTarget).tooltip('hide');
-                		}
+                		})
                 	})).append($('<button/>', {
                 		'type': 'button',
                 		'class': 'btn btn-secondary btn-sm',
                 		'data-toggle': 'tooltip',
                 		'title': 'Delete song',
                 		'data-song': playlist[i].song,
+                        'data-song-remove': 'on',
                 		'html': $('<i/>', {
                 			'class': 'fas fa-trash'
-                		}),
-                		'click': (e) => {
-                			// Delete song.
-                			player.removeSongFromPlaylist($(e.currentTarget).data('song'));
-                			// Hide the tooltip.
-                			$(e.currentTarget).tooltip('hide');
-                		}
+                		})
                 	}))
                 }));
 
                 // Append the row.
-                table.append(row);
+                table.push(row[0].outerHTML);
+            }
+
+            // Render the data.
+            if (cluster !== null) {
+                cluster.update(table);
+            } else {
+                cluster = new Clusterize({
+                    rows: table,
+                    scrollId: 'playlist-table-id',
+                    contentId: 'playlist-content',
+                    callbacks: {
+                        clusterChanged: () => {
+                            // Remove old events and register new ones.
+                            $('[data-song-play="on"]').off().on('click', (e) => {
+                                // Play the song.
+                                player.updateSong($(e.currentTarget).data('song'));
+                                // Hide the tooltip.
+                                $(e.currentTarget).tooltip('hide');
+                            });
+
+                            // Remove old events and register new ones.
+                            $('[data-song-remove="on"]').off().on('click', (e) => {
+                                // Delete the song.
+                                player.removeSongFromPlaylist($(e.currentTarget).data('song'));
+                                // Hide the tooltip.
+                                $(e.currentTarget).tooltip('hide');
+                                // Remove the row.
+                                $(e.currentTarget.closest('tr')).remove();
+                            });
+                        }
+                    }
+                });
             }
         });
 
@@ -286,7 +322,7 @@ $(function() {
     			user: e.requester
     		};
         });
-		
+
 		// Pause listener.
         player.addListener('pause', () => {
             if (player.API.getPlayerState() === 2) {
@@ -400,11 +436,16 @@ $(function() {
 	});
 
 	// Load playlist button.
-	//$('#load-playlist-button').on('click', () => {
-	//	helpers.getSongModal('Load Playlist', 'Playlist Name', 'Load', 'Playlist', () => {
+	$('#load-playlist-button').on('click', () => {
+		helpers.getPlaylistModal('Load Playlist', 'Playlist Name', 'Load', 'Playlist', () => {
+            let playlist = $('#playlist-load').val();
 
-	//	}).modal('toggle');
-	//});
+            if (playlist.length > 0) {
+                player.loadPlaylist(playlist);
+                toastr.success('Loading playlist: ' + playlist);
+            }
+		}).modal('toggle');
+	});
 
     // Settings button.
     $('#settings-button').on('click', () => {
@@ -413,7 +454,25 @@ $(function() {
             localStorage.setItem('phantombot_ytplayer_size', $('#player-size-btn').text().toLowerCase());
             // Set the new size.
             helpers.setPlayerSize();
-        }).modal('toggle');
+
+            // Update DJ name.
+            let djName = $('#dj-name').val();
+            if (djName.length > 0) {
+                player.dbUpdate('dj_name_up', 'ytSettings', 'playlistDJname', String(djName));
+            }
+
+            // Update user max songs.
+            let maxSongs = $('#max-song-user').val();
+            if (parseInt(maxSongs) > 0) {
+                player.dbUpdate('max_song_up', 'ytSettings', 'songRequestsMaxParallel', String(maxSongs));
+            }
+
+            // Update max song length.
+            let maxSongLen = $('#max-song-length').val();
+            if (parseInt(maxSongLen) > 0) {
+                player.dbUpdate('max_song_len_up', 'ytSettings', 'songRequestsMaxSecondsforVideo', String(maxSongLen));
+            }
+        });
     });
 
 	// Playlist shuffle button.
@@ -427,10 +486,12 @@ $(function() {
         container: 'body',
         trigger: 'hover',
         delay: {
-            show: 250,
+            show: 350,
             hide: 50
         }
     });
+
+
 });
 
 // Load other player settings.
