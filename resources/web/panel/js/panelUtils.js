@@ -397,7 +397,8 @@ function performCurrentPanelRefresh() {
 
     // Set panel refresh timeout according to the first established time in the doQueryArray. 0 will not call a refresh.
     if(doQueryArray[functionToCall][0].time) {
-        panelRefreshTimeout = setTimeout(performCurrentPanelRefresh, doQueryArray[functionToCall].time);
+        console.log( doQueryArray[functionToCall])
+        panelRefreshTimeout = setTimeout(performCurrentPanelRefresh, doQueryArray[functionToCall][0].time);
     }
 
 }
